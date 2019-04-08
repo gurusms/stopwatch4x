@@ -82,10 +82,7 @@ lcd.print(ms, 0);
 void loop() {
 switch (ssstate)  {
 case 0 :      
-    // время
-    /*curentTime= millis(); // чтение текущего времени
-    elapsed += curentTime - prevTime;  // прибавление времени к милисекундам
-    */
+    // считаем время
     finished = millis(); // сохраняет время остановки, чтобы вычислить прошедшее время.
     elapsed = finished - start;
     elapsed = elapsed * 10; // укскоряем в 10 раз время !!!!! для отладки !!!!
@@ -98,6 +95,7 @@ case 0 :
     ms = over % 100;
     break;
 case 1 :
+     // делаем остановку таймеров
      // если уже все таймеры остановлены
      if (k1state & k2state & k3state & k4state ) ssstate = 2;
       // здесь двигаем время если есть часы
@@ -107,21 +105,21 @@ case 1 :
      break;
 case 2 :
      // фаза перед стартом
-     // сбрасываем индикацию в нули
+     // мигаем экраном для предупреждения перед стартом
      delay (300);
      lcd.noBacklight();
      delay (300);
      lcd.backlight();
      break;
 case 3 :
+      // обнуляем счетчики, состояние кнопок и Стартуем
       ssstate = 0;
       k1state = false;
       k2state = false;
       k3state = false;
       k4state = false;
       elapsed = 0;
-      //delay(800);
-      //FS
+      // Сигнал перед стартом
       delay(800);
       FS
       delay(800);

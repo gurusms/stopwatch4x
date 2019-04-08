@@ -1,0 +1,73 @@
+#include <Arduino.h>
+// #include <time.h>
+// #include <Wire.h> 
+#include <LiquidCrystal_I2C.h> // Подключение библиотеки
+// #include <LiquidCrystal_PCF8574.h> // Подключение альтернативной библиотеки
+LiquidCrystal_I2C lcd(0x3F,16,2); // Указываем I2C адрес (наиболее распространенное значение), а также параметры экрана (в случае LCD 1602 - 2 строки по 16 символов в каждой 
+//LiquidCrystal_PCF8574 lcd(0x3F); // Вариант для библиотеки PCF8574 
+// объявляем переменные
+#define K1 8  // кнопка 1-го секундомера
+#define K2 9  // кнопка 2-го секундомера
+#define K3 10 // кнопка 3-го секундомера
+#define K4 11 // кнопка 4-го секундомера
+//#define SS 12 // кнопка 3-го секундомера
+#define ZZ 12 // кнопка 4-го секундомера
+
+float h, m, s, ms;
+unsigned long elapsed;
+unsigned long over;
+boolean buttonState = false;   // создаем глобальную переменную buttonState
+
+void setup()
+{
+ tone(ZZ, 1000, 300);
+ pinMode(K1, INPUT);  // определяем 1 секундомер (кнопка) как вход
+ pinMode(K2, INPUT);  // определяем 2 секундомер (кнопка) как вход
+ pinMode(K3, INPUT);  // определяем 3 секундомер (кнопка) как вход
+ pinMode(K4, INPUT);  // определяем 4 секундомер (кнопка) как вход
+ pinMode(SS, INPUT);  // определяем вывод 12 стоп-старт как вход
+ pinMode(ZZ, OUTPUT); // определяем вывод 13 зуммер (сигнал) как выход
+  lcd.init();                      // Инициализация дисплея  
+  lcd.backlight();                 // Подключение подсветки
+  lcd.setCursor(0,0);              // Установка курсора в начало первой строки
+//  lcd.print("0:00:00  0:00:00");       // Набор текста на первой строке
+//  lcd.setCursor(0,1);              // Установка курсора в начало второй строки
+//  lcd.print("0:00:00  0:00:00");       // Набор текста на первой строке
+//  lcd.print("00:00:0000:00:00");       // Набор текста на первой строке
+//  lcd.print("ArduinoMaster");       // Набор текста на второй строке
+//  lcd.setCursor(0,2);              // Установка курсора в начало второй строки
+//  lcd.print("string 3");       // Набор текста на второй строке
+//  lcd.setCursor(0,3);              // Установка курсора в начало второй строки
+//  lcd.print("string 4");       // Набор текста на второй строке
+  }
+void loop()
+{
+
+// время
+//if ( digitalRead(SS) && buttonState ) {
+elapsed = millis();
+h = int(elapsed / 3600000);
+over = elapsed % 3600000;
+m = int(over / 60000);
+over = over % 60000;
+s = int(over / 1000);
+// ms = over % 1000;
+ms = over % 100;
+// показать результаты
+lcd.setCursor(0, 0);
+if (h > 0) {lcd.print(h, 0); lcd.print("h ");}
+if (m > 0) {
+  if (m < 10) lcd.print("0");
+  lcd.print(m, 0); lcd.print("m ");
+  }
+if (s < 10) lcd.print("0");
+lcd.print(s, 0);
+lcd.print("s ");
+if (ms < 10) lcd.print("0");
+lcd.print(ms, 0);
+lcd.print("ms");
+delay (300);
+// }
+// else buttonState = ! buttonState;
+delay (10);
+}

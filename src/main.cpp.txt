@@ -1,0 +1,21 @@
+#include <Arduino.h>
+#include <time.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x3f, 16, 2); // Для экрана 20х4 (четырехстрочный)
+//LiquidCrystal_I2C lcd(0x27, 16, 2); // Для экрана 16х2 (двухстрочный)
+
+void setup()
+{
+// lcd.begin();
+lcd.setCursor(0, 0); // 1 строка
+lcd.print("LCD I2C Test - 20x4");
+lcd.setCursor(0, 1); // 2 строка
+lcd.print("LCD I2C Test - 20x4");
+}
+
+void loop()
+{
+// тело 
+}

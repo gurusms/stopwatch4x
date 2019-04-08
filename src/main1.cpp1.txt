@@ -1,0 +1,160 @@
+#include <Arduino.h>
+#include <MsTimer2.h>
+#include <Button.h>
+#include <LiquidCrystal_I2C.h> // Подключение библиотеки
+LiquidCrystal_I2C lcd(0x3F,16,2); // Указываем I2C адрес (наиболее распространенное значение), а также параметры экрана (в случае LCD 1602 - 2 строки по 16 символов в каждой 
+
+// объявляем переменные
+#define K1 8  // кнопка 1-го секундомера подключена к выводу 8
+#define K2 9  // кнопка 2-го секундомера подключена к выводу 9
+// #define K3 10 // кнопка 3-го секундомера
+// #define K4 11 // кнопка 4-го секундомера
+#define SS 10 // кнопка 3-го секундомера подключена к выводу 10
+#define ZZ 11 // кнопка 4-го секундомера подключена к выводу 11
+#define LED 13 // кнопка 4-го секундомера подключена к выводу 13
+#define FS tone(ZZ,1000,100); // короткий звук
+#define LS tone(ZZ,1000,500); // короткий звук
+
+
+float h, m, s, ms; // часы, минуты, секунды, миллисекунды
+unsigned long curentTime;  // текущее значение времени
+unsigned long prevTime;    // предыдущее значение времени
+unsigned long elapsed = 0; // время интервала, милисекунды
+unsigned long over;
+boolean k1state = false;   // создаем глобальную переменную k1state
+boolean k2state = false;   // создаем глобальную переменную k2state
+byte ssstate = 1;   // создаем глобальную переменную k2state
+
+Button k1(K1, 15);  // создание объекта - кнопка
+Button k2(K2, 15);  // создание объекта - кнопка
+Button ss(SS, 15);  // создание объекта - кнопка
+
+// обработчик прерывания 
+void  timerInterupt() {
+  k1.scanState();  // вызов метода ожидания стабильного состояния для кнопки  
+  k2.scanState();  // вызов метода ожидания стабильного состояния для кнопки  
+  ss.scanState();  // вызов метода ожидания стабильного состояния для кнопки  
+}
+
+void setup() {
+  // pinMode(LED, OUTPUT);      // определяем вывод светодиода как выход
+  MsTimer2::set(2, timerInterupt); // задаем период прерывания по таймеру 2 мс 
+  MsTimer2::start();              // разрешаем прерывание по таймеру
+// -----
+ pinMode(K1, INPUT);  // определяем 1 секундомер (кнопка) как вход
+ pinMode(K2, INPUT);  // определяем 2 секундомер (кнопка) как вход
+ // pinMode(K3, INPUT);  // определяем 3 секундомер (кнопка) как вход
+ // pinMode(K4, INPUT);  // определяем 4 секундомер (кнопка) как вход
+ pinMode(SS, INPUT);  // определяем  стоп-старт как вход
+ pinMode(ZZ, OUTPUT); // определяем  зуммер (сигнал) как выход
+ pinMode(LED, OUTPUT); // определяем светодиод как выход
+  lcd.init();                      // Инициализация дисплея  
+  lcd.backlight();                 // Подключение подсветки
+  lcd.setCursor(0,0);              // Установка курсора в начало первой строки
+  LS
+}
+
+void loop() {
+switch (ssstate)  {
+case 0 :      
+    // время
+    curentTime= millis(); // чтение текущего времени
+    elapsed += curentTime - prevTime;  // прибавление времени к милисекундам
+    h = int(elapsed / 3600000);
+    over = elapsed % 3600000;
+    m = int(over / 60000);
+    over = over % 60000;
+    s = int(over / 1000);
+    // ms = over % 1000;
+    ms = over % 100;
+    break;
+case 1 :
+     // здесь двигаем время если есть часы
+     break;
+case 2 :
+     // фаза перед стартом
+     // сбрасываем индикацию в нули
+     delay (300);
+     lcd.noBacklight();
+     delay (300);
+     lcd.backlight();
+     break;
+case 3 :
+      ssstate = 0;
+      k1state = false;
+      k2state = false;
+      elapsed = 0;
+      //delay(800);
+      //FS
+      delay(800);
+      FS
+      delay(800);
+      LS
+      lcd.clear();        // Очистка дисплея  
+      prevTime= millis(); // Обнуляем счетчик времени
+      break;
+default :
+     // код выполняется если  не совпало ни одно предыдущее значение
+     break;
+}
+
+// показать результаты
+// секундомер 1
+if ( k1state == false ) {
+lcd.setCursor(8, 0);
+if (h > 0) {lcd.print(h, 0); lcd.print(":");}
+if (m > 0) {
+  if (m < 10) lcd.print("0");
+  lcd.print(m, 0); lcd.print(":");
+  }
+if (s < 10) lcd.print("0");
+lcd.print(s, 0);
+lcd.print(":");
+if (ms < 10) lcd.print("0");
+lcd.print(ms, 0);
+}
+// секундомер 2
+if ( k2state == false ) {
+lcd.setCursor(8, 1);
+if (h > 0) {lcd.print(h, 0); lcd.print(":");}
+if (m > 0) {
+  if (m < 10) lcd.print("0");
+  lcd.print(m, 0); lcd.print(":");
+  }
+if (s < 10) lcd.print("0");
+lcd.print(s, 0);
+lcd.print(":");
+if (ms < 10) lcd.print("0");
+lcd.print(ms, 0);
+}
+
+
+delay (10);
+
+// управление светодиодом
+  if ( ss.flagClick == true ) {
+    // был клик кнопки
+    ss.flagClick= false;         // сброс признака 
+    ssstate++;
+    digitalWrite(LED, ! digitalRead(LED));  // инверсия состояния светодиода
+    FS // короткий звук
+    }    
+  
+  if ( k1.flagClick == true ) {
+    // был клик кнопки
+    k1.flagClick= false;         // сброс признака 
+    k1state = true;
+    // k1state =! k1state;
+    digitalWrite(LED, ! digitalRead(LED));  // инверсия состояния светодиода
+    FS // короткий звук
+    }    
+  
+  if ( k2.flagClick == true ) {
+    // был клик кнопки
+    k2.flagClick= false;         // сброс признака 
+    k2state = true;
+    // k2state =! k2state;
+    digitalWrite(LED, ! digitalRead(LED));  // инверсия состояния светодиода
+    FS // короткий звук
+  }    
+}

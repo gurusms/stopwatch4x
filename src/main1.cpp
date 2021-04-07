@@ -11,13 +11,11 @@ LiquidCrystal_I2C lcd(0x27,20,4); // Указываем I2C адрес (наиб
 #define K2 3  // кнопка 2-го секундомера
 #define K3 4  // кнопка 3-го секундомера
 #define K4 5  // кнопка 4-го секундомера
-// #define K5 6  // кнопка 4-го секундомера
-// #define K6 7  // кнопка 4-го секундомера
 #define SS 8 // кнопка стоп-старт
 #define ZZ 9  // на зуммер (сигнал)
 //#define LED 13 // кнопка 4-го секундомера подключена к выводу 13
-#define FS tone(ZZ,1000,100); // короткий звук
-#define LS tone(ZZ,1000,500); // короткий звук
+#define FS tone(ZZ,1000,100); // короткий сигнал
+#define LS tone(ZZ,1000,500); // длинный сигнал
 
 
 /*unsigned long curentTime;  // текущее значение времени
@@ -47,6 +45,7 @@ void  timerInterupt() {
 }
 
 void setup() {
+  Serial.begin(115200);
   MsTimer2::set(2, timerInterupt); // задаем период прерывания по таймеру 2 мс 
   MsTimer2::start();              // разрешаем прерывание по таймеру
 // -----
@@ -96,9 +95,9 @@ case 0 :
     m = int(over / 60000);
     over = over % 60000;
     s = int(over / 1000);
-    over = over / 10 ; // отсекаем ноль у миллисекунд (делаем счет десятками без нуля)
-    ms = over % 10;
-    // ms = over % 100;
+    // over = over / 10 ; // отсекаем ноль у миллисекунд (делаем счет десятками без нуля)
+    // ms = (over / 10) % 10;
+    ms = over % 1000;
     break;
 case 1 :
      // делаем остановку таймеров
@@ -133,6 +132,7 @@ case 3 :
       lcd.clear();
       m = 0; s = 0; ms = 0;
       start = millis(); // Обнуляем счетчик времени
+      Serial.print("START\n"); // Выводим в СОМ порт начало отсчета
       break;
 default :
      // код выполняется если  не совпало ни одно предыдущее значение
@@ -166,28 +166,32 @@ delay (100);
   
   if ( k1.flagClick == true ) {
     // был клик кнопки
-    k1.flagClick= false;         // сброс признака 
+    k1.flagClick = false;         // сброс признака 
+    if ( k1state == false ) Serial.print("K1_" + String(elapsed)+"\n");
     k1state = true;
     FS // короткий звук
     }    
   
   if ( k2.flagClick == true ) {
     // был клик кнопки
-    k2.flagClick= false;         // сброс признака 
+    k2.flagClick = false;         // сброс признака 
+    if ( k2state == false ) Serial.print("K2_" + String(elapsed)+"\n");
     k2state = true;
     FS // короткий звук
   }    
 
   if ( k3.flagClick == true ) {
     // был клик кнопки
-    k3.flagClick= false;         // сброс признака 
+    k3.flagClick = false;         // сброс признака 
+    if ( k3state == false ) Serial.print("K3_" + String(elapsed)+"\n");
     k3state = true;
     FS // короткий звук
   }    
 
   if ( k4.flagClick == true ) {
     // был клик кнопки
-    k4.flagClick= false;         // сброс признака 
+    k4.flagClick = false;         // сброс признака 
+    if ( k4state == false ) Serial.print("K4_" + String(elapsed)+"\n");
     k4state = true;
     FS // короткий звук
   }    

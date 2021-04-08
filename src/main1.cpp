@@ -61,6 +61,10 @@ void setup() {
   lcd.init();                      // Инициализация дисплея  
   lcd.backlight();                 // Подключение подсветки
   lcd.setCursor(0,0);              // Установка курсора в начало первой строки
+  lcd.print("  StopWatch ver 0.1");
+  delay (3000);
+  lcd.clear();
+  lcd.setCursor(0,0);              // Установка курсора в начало первой строки
   LS
 }
 
